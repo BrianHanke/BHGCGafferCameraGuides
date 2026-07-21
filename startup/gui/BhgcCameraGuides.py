@@ -47,13 +47,14 @@ class GuideGadget( GafferUI.Gadget ) :
 	def renderLayer( self, layer, style, reason ) :
 
 		tool = self.__tool()
-		if tool is None or not tool["active"].getValue():
+		if tool is None or not tool["active"].getValue() :
 			return
 
 		titleSafeEnabled = tool["titleSafe"].getValue()
 		actionSafeEnabled = tool["actionSafe"].getValue()
 		ruleOfThirdsEnabled = tool["ruleOfThirds"].getValue()
-		if not ( titleSafeEnabled or actionSafeEnabled or ruleOfThirdsEnabled ):
+		centerCrosshairEnabled = tool["centerCrosshair"].getValue()
+		if not ( titleSafeEnabled or actionSafeEnabled or ruleOfThirdsEnabled or centerCrosshairEnabled ) :
 			return
 
 		resolutionGate = tool.view().resolutionGate()
@@ -67,7 +68,7 @@ class GuideGadget( GafferUI.Gadget ) :
 			lineWidth = tool["lineWidth"].getValue()
 			lineColor = tool["lineColor"].getValue()
 
-			if titleSafeEnabled:
+			if titleSafeEnabled :
 				titleSize = gateSize * imath.V2f( math.sqrt( 0.8 ) )
 				titleSize = ( gateSize - titleSize ) / 2
 				titleMin = resolutionGate.min() + titleSize
@@ -78,10 +79,10 @@ class GuideGadget( GafferUI.Gadget ) :
 					( imath.V3f( titleMax.x, titleMax.y, 0 ), imath.V3f( titleMin.x, titleMax.y, 0 ) ),
 					( imath.V3f( titleMin.x, titleMax.y, 0 ), imath.V3f( titleMin.x, titleMin.y, 0 ) )
 				]
-				for p1, p2 in edges:
+				for p1, p2 in edges :
 					style.renderLine( IECore.LineSegment3f( p1, p2 ), lineWidth, lineColor )
 
-			if actionSafeEnabled:
+			if actionSafeEnabled :
 				actionSize = gateSize * imath.V2f( math.sqrt( 0.9 ) )
 				actionSize = ( gateSize - actionSize ) / 2
 				actionMin = resolutionGate.min() + actionSize
@@ -92,23 +93,40 @@ class GuideGadget( GafferUI.Gadget ) :
 					( imath.V3f( actionMax.x, actionMax.y, 0 ), imath.V3f( actionMin.x, actionMax.y, 0 ) ),
 					( imath.V3f( actionMin.x, actionMax.y, 0 ), imath.V3f( actionMin.x, actionMin.y, 0 ) )
 				]
-				for p1, p2 in edges:
+				for p1, p2 in edges :
 					style.renderLine( IECore.LineSegment3f( p1, p2 ), lineWidth, lineColor )
 
-			if ruleOfThirdsEnabled:
+			if ruleOfThirdsEnabled :
 				divNumH = tool["divNumH"].getValue()
 				divNumV = tool["divNumV"].getValue()
 				divSize = imath.V2f( gateSize / imath.V2f( divNumH, divNumV ) )
 
-				for v in range(1, divNumV):
+				for v in range(1, divNumV) :
 					y = resolutionGate.min().y + ( divSize.y * v )
 					p1 = imath.V3f( resolutionGate.min().x, y, 0.0 )
 					p2 = imath.V3f( resolutionGate.max().x, y, 0.0 )
 					style.renderLine( IECore.LineSegment3f( p1, p2 ), lineWidth, lineColor )
-				for h in range(1, divNumH):
+				for h in range(1, divNumH) :
 					x = resolutionGate.min().x + ( divSize.x * h )
 					p1 = imath.V3f( x, resolutionGate.min().y, 0.0 )
 					p2 = imath.V3f( x, resolutionGate.max().y, 0.0 )
+					style.renderLine( IECore.LineSegment3f( p1, p2 ), lineWidth, lineColor )
+
+			if centerCrosshairEnabled :
+				center = ( resolutionGate.min() + resolutionGate.max() ) / 2.0
+				length = 10.0
+				crosshairLines = [
+					(
+						imath.V3f( center.x - length, center.y, 0.0 ),
+						imath.V3f( center.x + length, center.y, 0.0 )
+					),
+					(
+						imath.V3f( center.x, center.y - length, 0.0 ),
+						imath.V3f( center.x, center.y + length, 0.0 )
+					)
+				]
+
+				for p1, p2 in crosshairLines :
 					style.renderLine( IECore.LineSegment3f( p1, p2 ), lineWidth, lineColor )
 
 	def layerMask( self ) :
@@ -130,6 +148,7 @@ class CameraGuides( GafferUI.Tool ) :
 		self["actionSafe"] = Gaffer.BoolPlug( "actionSafe", defaultValue = False )
 		self["titleSafe"] = Gaffer.BoolPlug( "titleSafe", defaultValue = False )
 		self["ruleOfThirds"] = Gaffer.BoolPlug( "ruleOfThirds", defaultValue = False )
+		self["centerCrosshair"] = Gaffer.BoolPlug( "centerCrosshair", defaultValue = False )
 		self["divNumH"] = Gaffer.IntPlug( "divNumH", defaultValue = 3 )
 		self["divNumV"] = Gaffer.IntPlug( "divNumV", defaultValue = 3 )
 		self["lineWidth"] = Gaffer.FloatPlug( "lineWidth", defaultValue = 1.5 )
@@ -168,6 +187,13 @@ Gaffer.Metadata.registerNode(
 
 			"description" : "Rule of thirds guide.",
 			"label" : "Rule of Thirds",
+			"toolbarLayout:section" : "Bottom",
+
+		},
+		"centerCrosshair" : {
+
+			"description" : "Format center.",
+			"label" : "Center",
 			"toolbarLayout:section" : "Bottom",
 
 		},
