@@ -1,6 +1,6 @@
 # BHGC Gaffer Camera Guides
 
-Gaffer plugin that adds a tool for displaying Action Safe, Title Safe and Rule of Thirds camera overlay guides. Customizable horizontal and vertical divisions and line width and color.
+Gaffer plugin that adds a tool for displaying Action Safe, Title Safe, Rule of Thirds and Format Center camera overlay guides. Customizable horizontal and vertical divisions and line width and color.
 
 # Installation
 
