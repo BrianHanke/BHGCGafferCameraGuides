@@ -67,19 +67,32 @@ class GuideGadget( GafferUI.Gadget ) :
 			gateSize = imath.V2f( resolutionGate.max() - resolutionGate.min() )
 			lineWidth = tool["lineWidth"].getValue()
 			lineColor = tool["lineColor"].getValue()
+			tickLength = 10.0
 
-			if titleSafeEnabled :
+			if titleSafeEnabled:
 				titleSize = gateSize * imath.V2f( math.sqrt( 0.8 ) )
 				titleSize = ( gateSize - titleSize ) / 2
 				titleMin = resolutionGate.min() + titleSize
 				titleMax = resolutionGate.max() - titleSize
+
 				edges = [
 					( imath.V3f( titleMin.x, titleMin.y, 0 ), imath.V3f( titleMax.x, titleMin.y, 0 ) ),
 					( imath.V3f( titleMax.x, titleMin.y, 0 ), imath.V3f( titleMax.x, titleMax.y, 0 ) ),
 					( imath.V3f( titleMax.x, titleMax.y, 0 ), imath.V3f( titleMin.x, titleMax.y, 0 ) ),
 					( imath.V3f( titleMin.x, titleMax.y, 0 ), imath.V3f( titleMin.x, titleMin.y, 0 ) )
 				]
-				for p1, p2 in edges :
+				for p1, p2 in edges:
+					style.renderLine( IECore.LineSegment3f( p1, p2 ), lineWidth, lineColor )
+
+				# Tick marks
+				center = ( titleMin + titleMax ) / 2.0
+				ticks = [
+					( imath.V3f( center.x, titleMax.y, 0 ), imath.V3f( center.x, titleMax.y - tickLength, 0 ) ),
+					( imath.V3f( center.x, titleMin.y, 0 ), imath.V3f( center.x, titleMin.y + tickLength, 0 ) ),
+					( imath.V3f( titleMin.x, center.y, 0 ), imath.V3f( titleMin.x + tickLength, center.y, 0 ) ),
+					( imath.V3f( titleMax.x, center.y, 0 ), imath.V3f( titleMax.x - tickLength, center.y, 0 ) )
+				]
+				for p1, p2 in ticks:
 					style.renderLine( IECore.LineSegment3f( p1, p2 ), lineWidth, lineColor )
 
 			if actionSafeEnabled :
@@ -94,6 +107,17 @@ class GuideGadget( GafferUI.Gadget ) :
 					( imath.V3f( actionMin.x, actionMax.y, 0 ), imath.V3f( actionMin.x, actionMin.y, 0 ) )
 				]
 				for p1, p2 in edges :
+					style.renderLine( IECore.LineSegment3f( p1, p2 ), lineWidth, lineColor )
+
+				# Tick marks
+				center = ( actionMin + actionMax ) / 2.0
+				ticks = [
+					( imath.V3f( center.x, actionMax.y, 0 ), imath.V3f( center.x, actionMax.y - tickLength, 0 ) ),
+					( imath.V3f( center.x, actionMin.y, 0 ), imath.V3f( center.x, actionMin.y + tickLength, 0 ) ),
+					( imath.V3f( actionMin.x, center.y, 0 ), imath.V3f( actionMin.x + tickLength, center.y, 0 ) ),
+					( imath.V3f( actionMax.x, center.y, 0 ), imath.V3f( actionMax.x - tickLength, center.y, 0 ) )
+				]
+				for p1, p2 in ticks:
 					style.renderLine( IECore.LineSegment3f( p1, p2 ), lineWidth, lineColor )
 
 			if ruleOfThirdsEnabled :
@@ -112,21 +136,23 @@ class GuideGadget( GafferUI.Gadget ) :
 					p2 = imath.V3f( x, resolutionGate.max().y, 0.0 )
 					style.renderLine( IECore.LineSegment3f( p1, p2 ), lineWidth, lineColor )
 
-			if centerCrosshairEnabled :
+			if centerCrosshairEnabled:
 				center = ( resolutionGate.min() + resolutionGate.max() ) / 2.0
-				length = 10.0
+				crosshairPercentage = 0.02 # Crosshair adapts to aspect ratio.
+				halfSize = ( gateSize * crosshairPercentage ) / 2.0
+
 				crosshairLines = [
 					(
-						imath.V3f( center.x - length, center.y, 0.0 ),
-						imath.V3f( center.x + length, center.y, 0.0 )
+						imath.V3f( center.x - halfSize.x, center.y, 0.0 ),
+						imath.V3f( center.x + halfSize.x, center.y, 0.0 )
 					),
 					(
-						imath.V3f( center.x, center.y - length, 0.0 ),
-						imath.V3f( center.x, center.y + length, 0.0 )
+						imath.V3f( center.x, center.y - halfSize.y, 0.0 ),
+						imath.V3f( center.x, center.y + halfSize.y, 0.0 )
 					)
 				]
 
-				for p1, p2 in crosshairLines :
+				for p1, p2 in crosshairLines:
 					style.renderLine( IECore.LineSegment3f( p1, p2 ), lineWidth, lineColor )
 
 	def layerMask( self ) :
